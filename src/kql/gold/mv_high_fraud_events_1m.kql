@@ -1,0 +1,1 @@
+.create-or-alter materialized-view with (backfill=true) mv_high_fraud_events_1m on table claims_silver_tbl{claims_silver_tbl|where fraudScore>=0.8|summarize highFraudEvents=count() by ts=bin(eventTimestamp,1m),region}

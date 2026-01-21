@@ -1,0 +1,1 @@
+.create-or-alter materialized-view with (backfill=true) mv_amount_exposure_region_15m on table claims_silver_tbl{claims_silver_tbl|summarize exposure_15m=sum(claimAmountDelta) by window=bin(eventTimestamp,15m),region}
