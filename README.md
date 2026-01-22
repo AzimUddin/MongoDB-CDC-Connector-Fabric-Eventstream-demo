@@ -3,8 +3,8 @@
 
 This sample demonstrates an end-to-end real-time data ingestion and analytics pipeline using:
 
-- **MongoDB CDC Connector for Eventstream**
 - **Microsoft Fabric Eventstream**
+- **MongoDB CDC Connector for Eventstream**
 - **Fabric Eventhouse (KQL database)**
 - **Medallion Architecture (Bronze → Silver → Gold)**
 - **Update Policies**
