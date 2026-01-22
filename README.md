@@ -1,17 +1,24 @@
-# Fabric Real-Time Claims CDC Demo
 
-End-to-end Microsoft Fabric Real-Time CDC demo with MongoDB Atlas, Eventstream, KQL Medallion (Bronze → Silver → Gold), MVs, and a Real-Time Dashboard.
+# Implementing Real-Time intelligence using MongoDB CDC Connector for Fabric Eventstream
 
-## Steps
-1) Load data into MongoDB (mongoimport).
+This sample demonstrates an end-to-end real-time data ingestion and analytics pipeline using:
 
-2) MongoDB prerequisites: reader user, network allowlist, pre/post images enabled.
+- **MongoDB CDC Connector for Eventstream**
+- **Microsoft Fabric Eventstream**
+- **Fabric Eventhouse (KQL database)**
+- **Medallion Architecture (Bronze → Silver → Gold)**
+- **Update Policies**
+- **KQL Materialized Views**
+- **Fabric Real-Time Dashboards**
 
-3) Configure Eventstream (MongoDB CDC) → Bronze table `claims_raw_tbl`.
+The demo simulates a real-world **Insurance Claims Processing** scenario where updates in a MongoDB database flow through Fabric in real time to power fraud analytics, exposure tracking, and claims operations dashboards.
 
-4) Create Silver table, transform, update policy.
+This repository includes:
 
-5) Create Gold materialized views and dashboard tiles.
-
-6) Insert more data via mongosh or run synthetic-data/seed_claims.py.
+- Full KQL scripts for Bronze, Silver, and Gold layers  
+- Eventstream configuration guidance  
+- A Python-based synthetic data generator for MongoDB  
+- Architecture diagrams  
+- A structured, repeatable demo flow  
+- A fully documented step-by-step setup guide  
 
