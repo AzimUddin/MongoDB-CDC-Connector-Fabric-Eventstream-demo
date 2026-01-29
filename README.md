@@ -71,18 +71,9 @@ The core components of the pipeline are:
 
 ---
 
-### 🔷 Architecture Diagram (Real-Time Intelligence Pipeline)
+### 🔷 Architecture Diagram (Fabric Real-Time Intelligence Pipeline)
 
-> **Insert image here from slide 3 of your deck**
->
-> Recommended filename:  
-> `images/fabric-rti-architecture.png`
->
-> Use this Markdown once the image is added:
->
-> ```markdown
-> images/fabric-rti-architecture.png
-> ```
+![Real-Time Intelligence Pipeline](./images/fabric-rti-architecture.png)
 
 ---
 
@@ -96,24 +87,8 @@ This demo implements the **Real-Time Medallion pattern** using Eventhouse + Upda
 
 Each layer is automated using **update policies**, keeping the system continuous and low-latency.
 
-> **Insert image here from slide 4 of your deck**
->
-> Recommended filename:  
-> `images/fabric-medallion-rti.png`
->
-> Markdown reference:
-> ```markdown
-> images/fabric-medallion-rti.png
-> ```
+### Medallion Architecture (Bronze → Silver → Gold)
+![Medallion Architecture](./images/fabric-medallion-rti.png)
 
 ---
 
-### Key Architectural Benefits
-
-- **Zero pipeline orchestration** (Eventstream + update policies automate everything)
-- **True real-time ingestion** via MongoDB CDC
-- **KQL-native query engine** for low-latency processing
-- **Materialized views** ensure dashboard performance even under high event volume
-- **End-to-end streaming lineage** from MongoDB → Metrics
-
----
