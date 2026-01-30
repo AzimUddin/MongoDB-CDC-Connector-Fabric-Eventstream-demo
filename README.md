@@ -92,3 +92,10 @@ Each layer is automated using **update policies**, keeping the system continuous
 
 ---
 
+
+## Prerequisites
+
+To run the full end‑to‑end Real‑Time CDC insurance claims demo (MongoDB → Fabric Eventstream → Bronze → Silver → Gold → Dashboard), ensure the following prerequisites are completed.
+
+---
+
