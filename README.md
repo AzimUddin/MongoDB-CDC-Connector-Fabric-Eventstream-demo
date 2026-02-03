@@ -92,10 +92,172 @@ Each layer is automated using **update policies**, keeping the system continuous
 
 ---
 
+## 1. Prerequisites
 
-## Prerequisites
+### MongoDB Atlas on Azure
 
-To run the full end‑to‑end Real‑Time CDC insurance claims demo (MongoDB → Fabric Eventstream → Bronze → Silver → Gold → Dashboard), ensure the following prerequisites are completed.
+You need a MongoDB Atlas cluster deployed on Azure with the following requirements:
+
+- The cluster must be accessible from your workstation IP address.
+- A database user with **admin privileges** is required for administrative tasks.
+
+### 1.1 Set up MongoDB Atlas Database and Collection
+
+Create the following database and collection in MongoDB Atlas:
+
+- **Database:** `claims-CDC-demo`
+- **Collection:** `claims`
+
+#### Sample JSON Document
+
+The following sample document represents an event related to an insurance claim:
+
+```json
+{
+  "_id": { },
+  "eventId": "evt-602bedcb-cc34-405b-9ac0-a9085c2a8016",
+  "claimId": "CLM-100004",
+  "eventType": "ClaimClosed",
+  "eventTimestamp": "2026-01-12T17:41:38.834580Z",
+  "claimStatus": "Closed",
+  "claimAmountDelta": 8087.91,
+  "region": "California",
+  "fraudScore": 0.96
+}
+```
+
+### Import Sample Data into MongoDB Atlas
+
+Import the sample data file  
+`src/synthetic-data/insurance_claims_8000_iso.json`  
+into the MongoDB Atlas `claims` collection using a command-line utility such as **mongoimport**.
+
+Example command (Windows):
+
+```bash
+mongoimport --uri "mongodb+srv://<UserName>:<Pwd>@<Atlas-cluster-name>/claims-CDC-demo" \
+  --collection claims \
+  --type json \
+  --file "<LocalFilePath>\insurance_claims_8000_iso.json" \
+  --jsonArray
+```
+
+### 1.2 Configure Atlas Database Access
+
+Create the following users in MongoDB Atlas:
+
+- **Admin User**
+  - Role: `atlasAdmin`
+  - Purpose: Used for administrative tasks such as enabling Pre/Post Images.
+
+- **CDC Connector User**
+  - Role: `readAnyDatabase`, for example, demo-user
+  - Purpose: Used by the MongoDB CDC connector to read data from MongoDB Atlas into Microsoft Fabric.
+
+
+### 1.3 Network Access
+
+- As of today, the MongoDB CDC connector **does not support Azure Private Endpoint** (support is in progress).
+- For proof-of-concept (POC) and testing, use the **IP Allowlist** workaround described in the Microsoft documentation:
+
+  https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/connect-connecots-in-virtual-network-on-premises
+
+
+### 1.4 Enable Pre/Post Images (Required for CDC)
+
+Pre/Post Images must be enabled on the collection you want to stream.
+
+1. Use **mongosh** to connect to MongoDB Atlas with an admin user.
+2. Run the following commands:
+
+```javascript
+use claims-CDC-demo
+
+db.runCommand({
+  collMod: "claims",
+  changeStreamPreAndPostImages: { enabled: true }
+})
+```
+---
+### 1.5 Microsoft Fabric
+
+Ensure the following Microsoft Fabric resources are available:
+
+- A Fabric workspace in **Fabric capacity** or **Trial license** mode, with **Contributor** or higher permissions.
+- An **Eventstream** in Microsoft Fabric.  
+  If you don’t have one, create an Eventstream before proceeding.
+---
+
+## 2. Configure Fabric Eventstream
+
+Once the MongoDB Atlas on Azure environment is ready, the next step is to configure Microsoft Fabric Eventstream to continuously ingest change stream events from the `claims` collection into Fabric.
 
 ---
 
+### 2.1 Create an Eventstream
+
+In your Microsoft Fabric workspace:
+
+1. Select **New → Eventstream**
+2. Name the eventstream, for example: claims_cdc_eventstream
+
+---
+
+### 2.2 Add MongoDB Atlas CDC Source
+
+Inside the Eventstream canvas:
+
+1. Click **Connect Data Sources**
+2. Search for Mongo in the search bar and Select **MongoDB (CDC)** connector and click Connect
+3. Configure the MongoDB (CDC) Source and the connection, following the steps in the Microsoft documentation https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-mongodb-change-data-capture
+- **Connection URI:** your Atlas SRV connection string  
+- **Database:** `claims-CDC-demo`  
+- **Collection:** `claims`  
+- **Authentication:** Database user (`demo-user`) created earlier
+- **Snapshot:** Use the default setting
+  
+4.Save the connection
+
+After connecting:
+- Eventstream will automatically begin validating the connection.
+- You should see live sample events in the **Data Preview** panel.
+This confirms the connector is receiving data.
+
+---
+
+
+### 2.3 Add Eventhouse (KQL DB) as Destination
+
+Next, add an Eventhouse destination for the Eventstream:
+
+1. In the Eventstream canvas (still in Edit Mode), click **Add Destination**
+2. Choose **Eventhouse**
+3. Select the default Data Ingestion mode (which is, Event Processing Before Ingestion)
+4. Create a new Eventhouse 
+5. Select your KQL database
+6. Select or create the target table name: claims_raw_tbl
+5. Save the configuration
+
+---
+
+### 2.4 Publish the Eventstream
+
+Click **Publish** at the top right of the Eventstream canvas.
+
+Once published:
+
+- Data starts flowing from MongoDB to Eventhouse immediately
+- Incoming CDC events populate the Bronze table: claims_raw_tbl
+
+You can confirm data ingestion by running:
+
+```kql
+claims_raw_tbl
+| take 10
+```
+
+You can exlore the schema and data in the bronze KQL table claims_raw_tbl, here is a sample payload
+```json
+{"before":null,"after":"{\"_id\": {\"$oid\": \"69672e67463617b095d1a731\"},\"eventId\": \"evt-3d2c9470-4661-455b-a36c-6fafa492aca6\",\"claimId\": \"CLM-100001\",\"eventType\": \"StatusUpdated\",\"eventTimestamp\": \"2026-01-12T19:05:33.834580Z\",\"claimStatus\": \"Under Review\",\"claimAmountDelta\": 11710.95,\"region\": \"Illinois\",\"fraudScore\": 0.94}","updateDescription":null,"ts_ms":1768372677208,"source":{"version":"3.3.1.Final","connector":"mongodb","name":"cdc.mongodb","ts_ms":1768372677208,"snapshot":"true","db":"claims-CDC-demo","sequence":null,"ts_us":"1768372677208057","ts_ns":"1768372677208057639","collection":"claims-demo","ord":-1,"lsid":null,"txnNumber":null,"wallTime":null},"op":"r","transaction":null}
+```
+---
