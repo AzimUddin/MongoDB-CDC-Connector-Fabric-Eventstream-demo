@@ -192,16 +192,12 @@ Ensure the following Microsoft Fabric resources are available:
 
 Once the MongoDB Atlas on Azure environment is ready, the next step is to configure Microsoft Fabric Eventstream to continuously ingest change stream events from the `claims` collection into Fabric.
 
----
-
 ### 2.1 Create an Eventstream
 
 In your Microsoft Fabric workspace:
 
 1. Select **New → Eventstream**
 2. Name the eventstream, for example: claims_cdc_eventstream
-
----
 
 ### 2.2 Add MongoDB Atlas CDC Source
 
@@ -223,8 +219,6 @@ After connecting:
 - You should see live sample events in the **Data Preview** panel.
 This confirms the connector is receiving data.
 
----
-
 
 ### 2.3 Add Eventhouse (KQL DB) as Destination
 
@@ -238,7 +232,6 @@ Next, add an Eventhouse destination for the Eventstream:
 6. Select or create the target table name: claims_raw_tbl
 5. Save the configuration
 
----
 
 ### 2.4 Publish the Eventstream
 
@@ -261,3 +254,89 @@ You can exlore the schema and data in the bronze KQL table claims_raw_tbl, here 
 {"before":null,"after":"{\"_id\": {\"$oid\": \"69672e67463617b095d1a731\"},\"eventId\": \"evt-3d2c9470-4661-455b-a36c-6fafa492aca6\",\"claimId\": \"CLM-100001\",\"eventType\": \"StatusUpdated\",\"eventTimestamp\": \"2026-01-12T19:05:33.834580Z\",\"claimStatus\": \"Under Review\",\"claimAmountDelta\": 11710.95,\"region\": \"Illinois\",\"fraudScore\": 0.94}","updateDescription":null,"ts_ms":1768372677208,"source":{"version":"3.3.1.Final","connector":"mongodb","name":"cdc.mongodb","ts_ms":1768372677208,"snapshot":"true","db":"claims-CDC-demo","sequence":null,"ts_us":"1768372677208057","ts_ns":"1768372677208057639","collection":"claims-demo","ord":-1,"lsid":null,"txnNumber":null,"wallTime":null},"op":"r","transaction":null}
 ```
 ---
+## 3 — Create Silver Table, Transform Function, and Update Policy
+
+The Silver layer cleans and normalizes the raw CDC payload from the Bronze table, producing a structured, analytics‑ready table that feeds the Gold Materialized Views.
+
+The Silver layer performs:
+- JSON unescaping (because MongoDB CDC emits escaped JSON in `after`)
+- Schema normalization
+- ISO timestamp parsing
+- Casting and field extraction
+- Appending clean claim events into `claims_silver_tbl`
+
+### 3.1 Create the Silver Table
+
+Create the target Silver table in your Eventhouse KQL database:
+
+```kql
+.create table claims_silver_tbl (
+  eventId:string,
+  claimId:string,
+  eventType:string,
+  eventTimestamp:datetime,
+  claimStatus:string,
+  claimAmountDelta:real,
+  region:string,
+  fraudScore:real
+)
+```
+### 3.2 Create the Silver Transform Function
+
+The MongoDB CDC connector sends escaped JSON inside the `after` field.  
+This transformation function ( which I used CoPilot to generate and debug iteratively) performs the following steps:
+
+- Parses the raw CDC payload
+- Unescapes the Debezium-style JSON
+- Extracts the `after` document fields
+- Converts ISO 8601 timestamps using `todatetime()`
+- Applies schema mapping for all fields required downstream
+
+```kql
+.create-or-alter function claims_silver_transform() {
+    claims_raw_tbl
+    | extend p = parse_json(tostring(payload))
+    | extend a = replace_string(replace_string(tostring(p.after), "\\\"", "\""), "\\\\", "\\")
+    | extend doc = parse_json(a)
+    | extend eventTimestamp = todatetime(tostring(doc.eventTimestamp))
+    | project
+        eventId = tostring(doc.eventId),
+        claimId = tostring(doc.claimId),
+        eventType = tostring(doc.eventType),
+        eventTimestamp = eventTimestamp,
+        claimStatus = tostring(doc.claimStatus),
+        claimAmountDelta = todouble(doc.claimAmountDelta),
+        region = tostring(doc.region),
+        fraudScore = todouble(doc.fraudScore)
+}
+```
+
+### 3.3 Create Update Policy (Bronze → Silver)
+
+The Update Policy automatically populates the Silver table whenever new CDC events arrive in the Bronze table.
+
+```kql
+.alter table claims_silver_tbl policy update @"
+[{
+  \"IsEnabled\": true,
+  \"Source\": \"claims_raw_tbl\",
+  \"Query\": \"claims_silver_transform()\",
+  \"IsTransactional\": false
+}]
+"
+```
+Once applied:
+- New events in `claims_raw_tbl` are automatically transformed
+- Clean rows are appended into `claims_silver_tbl`
+- Gold materialized views immediately see new data
+
+### 3.4 Validate Silver Layer
+
+After the update policy is enabled, run:
+
+```kql
+claims_silver_tbl
+| take 10
+```
+You should see clean, structured claim events with valid ISO timestamps.
+
