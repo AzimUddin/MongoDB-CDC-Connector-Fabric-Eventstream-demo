@@ -405,7 +405,7 @@ mv_claims_closed_1h on table claims_silver_tbl {
 
 ## 4.4 Build Real-Time Dashboard
 
-Based on the 3 Materialized views created above, create 3 tiles with the following KQLs and save each of them to a Real-Time Dashboard.
+Based on the 3 Materialized views created above, create 3 tiles with the following KQLs and save each of them to a Real-Time Dashboard. Edit each tile to update the tile name, Visual Type and Data.
 
 Tile 1 — High Fraud Events per Minute (Fraud ≥ 0.7)
 ```kql
@@ -425,3 +425,9 @@ mv_claims_closed_1h
 | where hour > ago(12h)
 | order by hour asc
 ```
+
+By default, without recent events streaming from the source, the RT Dashboard may look like this
+
+![Real-Time Dashboard without events](./images/RT-Dashboard-before-Insert.png)
+
+---
