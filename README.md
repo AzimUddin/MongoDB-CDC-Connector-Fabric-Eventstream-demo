@@ -330,9 +330,18 @@ Once applied:
 - Clean rows are appended into `claims_silver_tbl`
 - Gold materialized views immediately see new data
 
-### 3.4 Validate Silver Layer
+## 3.4 Backfill Silver Table (One-Time)
 
-After the update policy is enabled, run:
+The update policy processes only new incoming events.  
+To hydrate the Silver table with the historical CDC records already present in the Bronze table, run the following one-time command:
+
+```kql
+.set-or-replace claims_silver_tbl <|
+claims_silver_transform()
+```
+### 3.5 Validate Silver Layer
+
+After the update policy is enabled and silver table is backfilled, run:
 
 ```kql
 claims_silver_tbl
@@ -340,3 +349,79 @@ claims_silver_tbl
 ```
 You should see clean, structured claim events with valid ISO timestamps.
 
+---
+
+
+## 4 — Create Gold Materialized Views and Build Real-Time Dashboard
+
+The Gold layer contains business-ready aggregations used directly by the Real-Time Dashboard. These views are continuously updated as new claim events flow through the Bronze and Silver layers.
+
+This demo includes three core business KPIs:
+
+1. **High Fraud Events** (1‑minute window)
+2. **Exposure by Region** (15‑minute tumbling window)
+3. **Claims Closed per Hour**
+
+These represent fraud detection, financial exposure, and operational performance pillars.
+
+## 4.1 Materialized View — High Fraud Events (1-minute)
+
+This MV counts the number of high‑risk claim events where `fraudScore ≥ 0.8` within 1‑minute windows.
+
+```kql
+.create-or-alter materialized-view with (backfill=true)
+mv_high_fraud_events_1m on table claims_silver_tbl {
+    claims_silver_tbl
+    | where fraudScore >= 0.8
+    | summarize highFraudEvents = count() by ts = bin(eventTimestamp, 1m), region
+}
+```
+## 4.2 Materialized View — Exposure by Region (15-minute tumbling window)
+
+This MV sums the claimAmountDelta over 15‑minute intervals per region.
+
+```kql
+.create-or-alter materialized-view with (backfill=true)
+mv_amount_exposure_region_15m on table claims_silver_tbl {
+    claims_silver_tbl
+    | summarize exposure_15m = sum(claimAmountDelta)
+        by window = bin(eventTimestamp, 15m), region
+}
+```
+## 4.3 Materialized View — Claims Closed per Hour
+
+This MV tracks the number of claims closed within each hour
+
+```kql
+.create-or-alter materialized-view with (backfill=true)
+mv_claims_closed_1h on table claims_silver_tbl {
+    claims_silver_tbl
+    | where eventType == "ClaimClosed"
+        or claimStatus == "Closed"
+    | summarize claimsClosed = count()
+        by hour = bin(eventTimestamp, 1h), region
+}
+```
+
+## 4.4 Build Real-Time Dashboard
+
+Based on the 3 Materialized views created above, create 3 tiles with the following KQLs and save each of them to a Real-Time Dashboard.
+
+Tile 1 — High Fraud Events per Minute (Fraud ≥ 0.7)
+```kql
+mv_high_fraud_events_1m
+| where ts > ago(30m)
+| order by ts asc
+```
+Tile 2 — Rolling 15‑Minute Exposure (Financial Risk)
+```kql
+mv_amount_exposure_region_15m
+| where window > ago(2h)
+| order by window asc
+```
+Tile 3 — Claims Closed per Hour (Ops Efficiency)
+```kql
+mv_claims_closed_1h
+| where hour > ago(12h)
+| order by hour asc
+```
