@@ -431,3 +431,87 @@ By default, without recent events streaming from the source, the RT Dashboard ma
 ![Real-Time Dashboard without events](./images/RT-Dashboard-before-Insert.png)
 
 ---
+
+## 5 — Simulate new claims events and demonstrate Real-Time Intelligence
+
+After the Bronze, Silver, and Gold layers are configured, you can test the full pipeline by inserting new claim events into MongoDB. These new documents will flow through Eventstream to Bronze, transform into Silver via the update policy, and immediately appear in the Gold Materialized Views and the Real-Time Dashboard.
+
+
+### 5.1 Insert new claims events Using mongosh
+
+Connect to your MongoDB Atlas cluster using `mongosh` with an admin or read/write user, then run the following script to insert 1000 synthetic claim events:
+
+```javascript
+use("claims-CDC-demo");
+
+const regions = ["Texas", "California", "New York", "Florida"];
+const now = new Date();
+
+let events = [];
+
+for (let i = 0; i < 1000; i++) {
+
+  // Spread events across last 30 minutes
+  let eventTime = new Date(now.getTime() - (Math.random() * 30 * 60 * 1000));
+
+  // Create intentional fraud spike in last 5 minutes
+  let isFraudSpike = eventTime > new Date(now.getTime() - (5 * 60 * 1000));
+
+  let fraudScore = isFraudSpike
+    ? 0.75 + Math.random() * 0.25   // 0.75–1.0
+    : Math.random() * 0.5;          // 0.0–0.5
+
+  // Create exposure spikes
+  let claimAmountDelta = isFraudSpike
+    ? 5000 + Math.random() * 20000
+    : 100 + Math.random() * 500;
+
+  // Some claims closed
+  let isClosed = Math.random() < 0.2;
+
+  events.push({
+    eventId: `evt-${Date.now()}-${i}`,
+    claimId: `CLM-${100000 + i}`,
+    eventType: isClosed ? "ClaimClosed" : "StatusUpdated",
+    eventTimestamp: eventTime.toISOString(),
+    claimStatus: isClosed ? "Closed" : "Under Review",
+    claimAmountDelta: claimAmountDelta,
+    region: regions[Math.floor(Math.random() * regions.length)],
+    fraudScore: fraudScore
+  });
+}
+
+db.getCollection("claims").insertMany(events);
+
+```
+
+### 5.2 Validate new claims events in Bronze Table
+After running the insert script, verify that the new CDC events are landing in the Bronze table:
+```kql
+claims_raw_tbl
+| sort by ingestion_time() desc
+| take 10
+```
+
+### 5.3 Validate new claims events in Silver Table
+Confirm that the Silver update policy has transformed the new Bronze events, clean and transformed:
+```kql
+claims_silver_tbl
+| sort by eventTimestamp desc
+| take 10
+```
+
+### 5.4 Verify Real-Time Dashboard
+Open your Real-Time Dashboard:
+
+High Fraud Events should spike if new events have fraudScore ≥ 0.7, Exposure tile should reflect the injected financial deltas and Claims Closed tile will update if ClaimClosed events were inserted.
+
+The Real-Time dashboard may look like below -
+
+![Real-Time Dashboard with new claims events](./images/RT-Dashboard-after-Insert.png)
+
+The entire pipeline should respond within seconds.
+
+This demonstrates end-to-end real-time ingestion and analytics from MongoDB CDC → Fabric Eventstream → Bronze → Silver → Gold → Fabric RT Dashboard.
+
+---
