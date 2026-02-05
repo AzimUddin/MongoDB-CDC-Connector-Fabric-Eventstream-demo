@@ -178,7 +178,7 @@ db.runCommand({
   changeStreamPreAndPostImages: { enabled: true }
 })
 ```
----
+
 ### 1.5 Microsoft Fabric
 
 Ensure the following Microsoft Fabric resources are available:
@@ -513,5 +513,60 @@ The Real-Time dashboard may look like below -
 The entire pipeline should respond within seconds.
 
 This demonstrates end-to-end real-time ingestion and analytics from MongoDB CDC → Fabric Eventstream → Bronze → Silver → Gold → Fabric RT Dashboard.
+
+---
+
+## 6 - Troubleshooting
+
+Below are common issues you may encounter while setting up or running the MongoDB CDC connector for Fabric Eventstream, along with recommended resolutions.
+
+### 6.1 Eventstream is not receiving MongoDB CDC events
+- Ensure the MongoDB Atlas cluster is reachable by Fabric runtime. see Prerequisites -> Network Access
+- Verify that the database user used by Fabric has the correct privileges (`readAnyDatabase').
+- Confirm that **Pre/Post Images** are enabled on the collection, see Prerequisites
+- Ensure that you specify fully qualified collection name, i.e., DBName.CollectionName in the EventStream Source configuration
+ 
+### 6.2 Silver table is empty or missing new rows
+- The update policy may not be active or was not applied correctly.
+- Validate the policy:
+```kql
+.show table claims_silver_tbl policy update
+```
+- Confirm that your Silver transform function returns rows with valid column values
+
+### 6.3 Materialized Views are not updating
+- MV backfill may not have occurred if created before Silver had data.
+- Run:
+```kql
+.alter materialized-view <mv_name> (backfill=true)
+```
+- Ensure Silver table has new events flowing in:
+```kql
+claims_silver_tbl | take 10
+```
+
+### 6.4 Dashboard not refreshing with new data
+- Verify tiles point to Materialized Views, not base tables
+- Check that Eventstream is still running and not in an error state
+- Confirm timestamp filters (e.g., ago(30m)) reflect recent data
+
+---
+
+## 7 - Documentation
+
+- MongoDB CDC Connector for Fabric Eventstream
+https://learn.microsoft.com/fabric/real-time-intelligence/eventstream-mongodb-cdc
+
+- Configure Eventstream
+https://learn.microsoft.com/fabric/real-time-intelligence/eventstream-overview
+
+- Real-Time Intelligence in Fabric
+https://learn.microsoft.com/fabric/real-time-intelligence/
+
+- Update Policies in KQL
+https://learn.microsoft.com/azure/data-explorer/kusto/management/updatepolicy
+
+- Materialized Views
+https://learn.microsoft.com/azure/data-explorer/kusto/management/materialized-views
 
 ---
