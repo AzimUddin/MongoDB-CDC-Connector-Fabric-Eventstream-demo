@@ -92,7 +92,7 @@ Each layer is automated using **update policies**, keeping the system continuous
 
 ---
 
-## 1. Prerequisites
+## 🧩 1 - Prerequisites
 
 ### MongoDB Atlas on Azure
 
@@ -188,7 +188,7 @@ Ensure the following Microsoft Fabric resources are available:
   If you don’t have one, create an Eventstream before proceeding.
 ---
 
-## 2. Configure Fabric Eventstream
+## 🔄 2 - Configure Fabric Eventstream
 
 Once the MongoDB Atlas on Azure environment is ready, the next step is to configure Microsoft Fabric Eventstream to continuously ingest change stream events from the `claims` collection into Fabric.
 
@@ -254,7 +254,7 @@ You can exlore the schema and data in the bronze KQL table claims_raw_tbl, here 
 {"before":null,"after":"{\"_id\": {\"$oid\": \"69672e67463617b095d1a731\"},\"eventId\": \"evt-3d2c9470-4661-455b-a36c-6fafa492aca6\",\"claimId\": \"CLM-100001\",\"eventType\": \"StatusUpdated\",\"eventTimestamp\": \"2026-01-12T19:05:33.834580Z\",\"claimStatus\": \"Under Review\",\"claimAmountDelta\": 11710.95,\"region\": \"Illinois\",\"fraudScore\": 0.94}","updateDescription":null,"ts_ms":1768372677208,"source":{"version":"3.3.1.Final","connector":"mongodb","name":"cdc.mongodb","ts_ms":1768372677208,"snapshot":"true","db":"claims-CDC-demo","sequence":null,"ts_us":"1768372677208057","ts_ns":"1768372677208057639","collection":"claims-demo","ord":-1,"lsid":null,"txnNumber":null,"wallTime":null},"op":"r","transaction":null}
 ```
 ---
-## 3 — Create Silver Table, Transform Function, and Update Policy
+## ⚙️ 3 - Create Silver Table, Transform Function, and Update Policy
 
 The Silver layer cleans and normalizes the raw CDC payload from the Bronze table, producing a structured, analytics‑ready table that feeds the Gold Materialized Views.
 
@@ -352,7 +352,7 @@ You should see clean, structured claim events with valid ISO timestamps.
 ---
 
 
-## 4 — Create Gold Materialized Views and Build Real-Time Dashboard
+## 📊 4 - Create Gold Materialized Views and Build Real-Time Dashboard
 
 The Gold layer contains business-ready aggregations used directly by the Real-Time Dashboard. These views are continuously updated as new claim events flow through the Bronze and Silver layers.
 
@@ -432,7 +432,7 @@ By default, without recent events streaming from the source, the RT Dashboard ma
 
 ---
 
-## 5 — Simulate new claims events and demonstrate Real-Time Intelligence
+## 🚀 5 - Simulate New Claims Events and Demonstrate Real-Time Intelligence
 
 After the Bronze, Silver, and Gold layers are configured, you can test the full pipeline by inserting new claim events into MongoDB. These new documents will flow through Eventstream to Bronze, transform into Silver via the update policy, and immediately appear in the Gold Materialized Views and the Real-Time Dashboard.
 
@@ -516,7 +516,7 @@ This demonstrates end-to-end real-time ingestion and analytics from MongoDB CDC 
 
 ---
 
-## 6 - Troubleshooting
+## 🛠️ 6 - Troubleshooting
 
 Below are common issues you may encounter while setting up or running the MongoDB CDC connector for Fabric Eventstream, along with recommended resolutions.
 
@@ -552,7 +552,7 @@ claims_silver_tbl | take 10
 
 ---
 
-## 7 - Documentation
+## 📚 7 - Documentation
 
 - MongoDB CDC Connector for Fabric Eventstream
 https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-mongodb-change-data-capture
@@ -571,7 +571,7 @@ https://learn.microsoft.com/en-us/kusto/management/materialized-views/materializ
 
 ---
 
-## 8 - Contributing
+## 🤝 8 - Contributing
 
 To contribute:
 1. Fork this repository
@@ -582,13 +582,13 @@ To contribute:
 
 ---
 
-## 9 - License
+## 📄 9 - License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
 
 ---
 
-## 10 - Support
+## 💬 10 - Support
 
 This sample is provided as-is without official support.
 
