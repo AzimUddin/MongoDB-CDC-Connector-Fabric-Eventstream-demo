@@ -555,18 +555,47 @@ claims_silver_tbl | take 10
 ## 7 - Documentation
 
 - MongoDB CDC Connector for Fabric Eventstream
-https://learn.microsoft.com/fabric/real-time-intelligence/eventstream-mongodb-cdc
+https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-mongodb-change-data-capture
 
-- Configure Eventstream
-https://learn.microsoft.com/fabric/real-time-intelligence/eventstream-overview
+- Add an Eventhouse destination to an eventstream
+https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-destination-kql-database
 
 - Real-Time Intelligence in Fabric
-https://learn.microsoft.com/fabric/real-time-intelligence/
+https://learn.microsoft.com/en-us/fabric/real-time-intelligence/overview
 
 - Update Policies in KQL
 https://learn.microsoft.com/azure/data-explorer/kusto/management/updatepolicy
 
 - Materialized Views
-https://learn.microsoft.com/azure/data-explorer/kusto/management/materialized-views
+https://learn.microsoft.com/en-us/kusto/management/materialized-views/materialized-view-overview?view=microsoft-fabric&preserve-view=true
 
 ---
+
+## 8 - Contributing
+
+To contribute:
+1. Fork this repository
+2. Create a feature branch: ``` git checkout -b feature/new-feature ```
+3. Commit your changes: ``` git commit -am 'Add new feature' ```
+4. Push to the branch: ``` git push origin feature/new-feature ```
+5. Submit a pull request
+
+---
+
+## 9 - License
+
+This project is licensed under the MIT License. See the LICENSE file for more details.
+
+---
+
+## 10 - Support
+
+This sample is provided as-is without official support.
+
+For questions, issues, or enhancement ideas:
+- Open an Issue in this GitHub repository
+- Review the Troubleshooting section in this README
+- Refer to Microsoft documentation linked above
+
+---
+
