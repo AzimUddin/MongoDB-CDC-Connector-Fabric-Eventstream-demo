@@ -206,11 +206,12 @@ Inside the Eventstream canvas:
 1. Click **Connect Data Sources**
 2. Search for Mongo in the search bar and Select **MongoDB (CDC)** connector and click Connect
 3. Configure the MongoDB (CDC) Source and the connection, following the steps in the Microsoft documentation https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-mongodb-change-data-capture
-- **Connection:** Create a new connection using the Server name in the format <atlasClusterName>.xxxxxxx.mongodb.net, obtained from your Atlas SRV connection string  
+- **Connection:** Create a new connection using the Server name in the format atlasClusterName.xxxxxxx.mongodb.net, obtained from your Atlas SRV connection string  
 - **Database:** `claims-CDC-demo`  
-- **Collection:** `claims-CDC-demo.claims`  **NOTE: Enter the collection name in format <databaseName>.<collectionName>**
-- **Authentication:** Database user (`demo-user`) created earlier
+- **Collection:** `claims-CDC-demo.claims` ⚠️ **IMPORTANT:** Enter the collection name in the format `databaseName.collectionName`
+- **Authentication:** Database user (`demo-user`) created earlier  
 - **Snapshot:** Use the default setting
+
   
 4.Save the connection
 
