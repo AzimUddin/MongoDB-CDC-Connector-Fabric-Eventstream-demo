@@ -555,14 +555,17 @@ claims_silver_tbl | take 10
 
 ## 📚 7 - Documentation
 
+- Real-Time Intelligence in Fabric
+https://learn.microsoft.com/en-us/fabric/real-time-intelligence/overview
+
+- Implement Medallion Architecture in Fabric Real-Time Intelligence
+https://learn.microsoft.com/en-us/fabric/real-time-intelligence/architecture-medallion
+
 - MongoDB CDC Connector for Fabric Eventstream
 https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-mongodb-change-data-capture
 
 - Add an Eventhouse destination to an eventstream
 https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-destination-kql-database
-
-- Real-Time Intelligence in Fabric
-https://learn.microsoft.com/en-us/fabric/real-time-intelligence/overview
 
 - Update Policies in KQL
 https://learn.microsoft.com/azure/data-explorer/kusto/management/updatepolicy
