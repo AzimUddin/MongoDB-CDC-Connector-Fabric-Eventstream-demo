@@ -1,1 +1,1 @@
-.alter table claims_silver_tbl policy update @"[{\"IsEnabled\":true,\"Source\":\"claims_raw_tbl\",\"Query\":\"claims_silver_transform()\",\"IsTransactional\":false}]"
+.alter table claims_silver_tbl policy update @"[{""IsEnabled"":true,""Source"":""claims_raw_tbl"",""Query"":""claims_silver_transform()"",""IsTransactional"":false}]"
