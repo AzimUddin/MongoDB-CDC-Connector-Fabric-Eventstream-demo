@@ -360,13 +360,13 @@ These represent fraud detection, financial exposure, and operational performance
 
 ## 4.1 Materialized View — High Fraud Events (1-minute)
 
-This MV counts the number of high‑risk claim events where `fraudScore ≥ 0.8` within 1‑minute windows.
+This MV counts the number of high‑risk claim events where `fraudScore ≥ 0.7` within 1‑minute windows.
 
 ```kql
 .create-or-alter materialized-view with (backfill=true)
 mv_high_fraud_events_1m on table claims_silver_tbl {
     claims_silver_tbl
-    | where fraudScore >= 0.8
+    | where fraudScore >= 0.7
     | summarize highFraudEvents = count() by ts = bin(eventTimestamp, 1m), region
 }
 ```
