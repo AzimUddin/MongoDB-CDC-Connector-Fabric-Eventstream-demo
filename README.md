@@ -317,14 +317,7 @@ This transformation function ( which I used CoPilot to generate and debug iterat
 The Update Policy automatically populates the Silver table whenever new CDC events arrive in the Bronze table.
 
 ```kql
-.alter table claims_silver_tbl policy update @"
-[{
-  \"IsEnabled\": true,
-  \"Source\": \"claims_raw_tbl\",
-  \"Query\": \"claims_silver_transform()\",
-  \"IsTransactional\": false
-}]
-"
+.alter table claims_silver_tbl policy update @"[{""IsEnabled"":true,""Source"":""claims_raw_tbl"",""Query"":""claims_silver_transform()"",""IsTransactional"":false}]"
 ```
 Once applied:
 - New events in `claims_raw_tbl` are automatically transformed
