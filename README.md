@@ -401,24 +401,83 @@ mv_claims_closed_1h on table claims_silver_tbl {
 
 Based on the 3 Materialized views created above, create 3 tiles with the following KQLs and save each of them to a Real-Time Dashboard. Edit each tile to update the tile name, Visual Type and Data.
 
-Tile 1 — High Fraud Events per Minute (Fraud ≥ 0.7)
+### Tile 1 — High Fraud Events per Minute (Fraud ≥ 0.7)
+
+Paste this into Queryset:
+
 ```kql
 mv_high_fraud_events_1m
 | where ts > ago(30m)
 | order by ts asc
 ```
-Tile 2 — Rolling 15‑Minute Exposure (Financial Risk)
+Then:
+1. Click **Run**.
+2. Click **Save to dashboard**.
+
+Choose the following options:
+- **Dashboard:** `Claims RTI Dashboard`
+- **Tile name:** `High Fraud Events (≥ 0.7)`
+
+#### Visualization Settings
+
+- **Visualization type:** Line chart  
+- **X-Axis:** `ts`  
+- **Y-Axis:** `highFraudEvents`  
+- **Series:** `region`
+
+🔹 This tile becomes an instant fraud trend monitor.
+
+### Tile 2 — Rolling 15‑Minute Exposure (Financial Risk)
+
+Paste this into Queryset:
+
 ```kql
 mv_amount_exposure_region_15m
 | where window > ago(2h)
 | order by window asc
 ```
-Tile 3 — Claims Closed per Hour (Ops Efficiency)
+Then:
+1. Click **Run**.
+2. Click **Save to dashboard**.
+
+Choose the following options:
+- **Dashboard:** `Claims RTI Dashboard`
+- **Tile name:** `15‑Minute Rolling Exposure`
+
+#### Visualization Settings
+
+- **Visualization type:** Area chart (great for exposure curves) 
+- **X-Axis:** `ts`  
+- **Y-Axis:** `exposure_15m`  
+- **Series:** `region`
+
+🔹 Shows a live rolling curve of claims cost — executives love this.
+
+### Tile 3 — Claims Closed per Hour (Ops Efficiency)
+
+Paste this into Queryset:
+
 ```kql
 mv_claims_closed_1h
 | where hour > ago(12h)
 | order by hour asc
 ```
+Then:
+1. Click **Run**.
+2. Click **Save to dashboard**.
+
+Choose the following options:
+- **Dashboard:** `Claims RTI Dashboard`
+- **Tile name:** `Claims Closed per Hour`
+
+#### Visualization Settings
+
+- **Visualization type:** Column chart
+- **X-Axis:** `hour`  
+- **Y-Axis:** `claimsClosed`  
+- **Series:** `region`
+
+🔹 Shows operational throughput — perfect for an adjuster/claims manager story.
 
 By default, without recent events streaming from the source, the RT Dashboard may look like this
 
