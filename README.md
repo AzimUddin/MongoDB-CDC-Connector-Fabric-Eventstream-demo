@@ -416,7 +416,7 @@ Then:
 
 Choose the following options:
 - **Dashboard:** `Claims RTI Dashboard`
-- **Tile name:** `High Fraud Events (≥ 0.7)`
+- **Tile name:** `High Fraud Events per Minute`
 
 #### Visualization Settings
 
