@@ -157,9 +157,13 @@ Create the following users in MongoDB Atlas:
 
 ### 1.3 Network Access
 
-- As of today, the MongoDB CDC connector **does not support Azure Private Endpoint** (support is in progress).
-- For proof-of-concept (POC) and testing, use the **IP Allowlist** workaround described in the Microsoft documentation:
-
+- MongoDB CDC connector **supports Virtual Network and Azure Private Endpoint**.
+- To learn more about the private network support, review the Microsoft documentation:
+  https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/streaming-connector-private-network-support-overview
+- To setup the MongoDB CDC connector for private network, follow this step-by-step guide:
+  https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/streaming-connector-private-network-support-guide
+  
+- For proof-of-concept (POC) and testing, if you are not using Private Endpoint for MongoDB Atlas, you can potentially use the **IP Allowlist** workaround described in the Microsoft documentation:
   https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/connect-connecots-in-virtual-network-on-premises
 
 
